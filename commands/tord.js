@@ -5,7 +5,7 @@ const { Scholar } = require('../structures/Database')
 const moment = require('moment')
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
-const adapter = new FileSync('../../database.json')
+const adapter = new FileSync('database.json')
 const db = low(adapter)
 
 if (!db.get('tord_players').value()) {
@@ -15,7 +15,7 @@ if (!db.get('tord_players').value()) {
 class TruthOrDareCommand extends Command {
     constructor() {
         super('tord', {
-            aliases: ['tord', 'td'],
+            aliases: ['tord', 'td', 'game'],
             args: [
                 {
                     id: 'action',
@@ -26,7 +26,7 @@ class TruthOrDareCommand extends Command {
     }
 
     async exec(message, args) {
-        if (['join', 'next', 'leave', 'clear', 'players', 'ls', 'n'].includes(args.action)) {
+        if (['join', 'next', 'leave', 'clear', 'players', 'ls', 'n', 'cf', 'coin', 'coinflip'].includes(args.action)) {
             if (args.action === 'join') {
                 console.log(db.get('tord_players').value())
                 if (db.get('tord_players').value().includes(message.author.id)) return message.reply("You are already in the game. :clown:")
@@ -59,6 +59,9 @@ class TruthOrDareCommand extends Command {
                 } else {
                     await message.reply("Looks like you're playing with ghosts. :ghost: ")
                 }
+            } else if (['cf', 'coin', 'coinflip'].includes(args.action)) {
+                let result = Math.random()
+                await message.reply(result > 0.5 ? "The coin landed on: heads" : "The coin landed on: tails")
             }
         }
     }
