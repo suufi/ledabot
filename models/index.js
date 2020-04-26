@@ -1,0 +1,1 @@
+exports.Scholar = require('./Scholar').scholarModel
