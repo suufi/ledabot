@@ -9,6 +9,9 @@ class ReadyListener extends Listener {
   }
 
   exec () {
+    this.client.user.setPresence({ activity: { name: 'with your acceptances' }, status: 'idle' }).then(() => {
+      console.log('Set presence')
+    })
     console.log('I\'m ready!')
   }
 }
