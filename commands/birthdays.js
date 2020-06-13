@@ -17,7 +17,12 @@ class BirthdayListCommand extends Command {
         let status = await message.reply("Fetching scholars :hourglass: ")
 
         const embed = new Discord.MessageEmbed()
-            .setTitle(":birthday: Birthdays")
+          .setTitle(":birthday: Birthdays")
+          .setThumbnail('https://i.imgur.com/9EU2fFu.jpg')
+
+        const embed2 = new Discord.MessageEmbed()
+          .setTitle(":birthday: Birthdays (cont.)")
+          .setThumbnail('https://i.imgur.com/9EU2fFu.jpg')
 
         const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
         const birthdays = [
@@ -26,16 +31,34 @@ class BirthdayListCommand extends Command {
             [], [], [], []
         ]
 
-            //new Array(12).fill([])
-
         for (let scholar of scholars) {
             if (scholar.birthday) {
-                let scholarDisplayName = scholar.name || scholar.nickname || `<@${scholar.userId}>`
-                birthdays[scholar.birthday.getMonth()].push(`${scholarDisplayName} (${moment(scholar.birthday).format('MMMM DD')})`)
+                let userResolvable = message.guild.member(scholar.userId).nickname || message.guild.member(scholar.userId).user.username
+                userResolvable = userResolvable && userResolvable.split(" | ")[0]
+                userResolvable = userResolvable && userResolvable.replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '') // remove emojis
+
+                let scholarDisplayName = scholar.name || scholar.nickname || userResolvable || `<@${scholar.userId}>`
+                birthdays[scholar.birthday.getMonth()].push(`**${scholarDisplayName}** (${moment(scholar.birthday).format('MMMM DD')})`)
             }
         }
 
-        for (let monthIndex in months) {
+        for (let monthIndex in months.slice(0, 6)) {
+            if (birthdays[monthIndex].length > 0) {
+                let birthdayMonth = birthdays[monthIndex]
+                birthdayMonth = birthdayMonth.sort((a, b) => {
+                    const dayA = a.replace(/<@.+\d+>/g,"").match(/\d+/g).map(Number)[0]
+                    const dayB = b.replace(/<@.+\d+>/g,"").match(/\d+/g).map(Number)[0]
+                    return dayA > dayB ? 1 : -1
+                })
+                embed.addField(months[monthIndex], `- ${birthdayMonth.join('\n- ')}`, true)
+                if (monthIndex % 2 === 0) {
+                    embed.addField('\u200b', '\u200b', true)
+                }
+            }
+        }
+
+        for (let monthIndexA in months.slice(6, 12)) {
+            const monthIndex = Number(monthIndexA) + 6
             if (birthdays[monthIndex].length > 0) {
                 let birthdayMonth = birthdays[monthIndex]
                 birthdayMonth = birthdayMonth.sort((a, b) => {
@@ -44,11 +67,15 @@ class BirthdayListCommand extends Command {
                     console.log(dayA, dayB)
                     return dayA > dayB ? 1 : -1
                 })
-                embed.addField(months[monthIndex], `- ${birthdayMonth.join('\n- ')}`, false)
+                embed2.addField(months[monthIndex], `- ${birthdayMonth.join('\n- ')}`, true)
+                if (monthIndex % 2 === 0) {
+                    embed2.addField('\u200b', '\u200b', true)
+                }
             }
         }
 
         await status.edit({ embed, content: "" })
+        await status.channel.send({ embed: embed2, content: "" })
         // if (queryResults.length > 1) {
         //     const embed = new Discord.MessageEmbed()
         //         // .addField("January")
